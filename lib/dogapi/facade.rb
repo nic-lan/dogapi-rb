@@ -98,6 +98,7 @@ module Dogapi
       # Support for Dashboard List API v2.
       @v2 = Dogapi::ClientV2.new(@api_key, @application_key, true, true, @datadog_host)
 
+      @usage_svc = Dogapi::V1::UsageService.new(@api_key, @application_key, silent, timeout, @datadog_host)
     end
 
     #
@@ -165,6 +166,13 @@ module Dogapi
       ensure
         @metric_svc.switch_to_single
       end
+    end
+
+    # Get a list of active metrics since a given time
+    # +from+ The seconds since the unix epoch <tt>[Time, Integer]</tt>
+    #
+    def get_active_metrics(from)
+      @metric_svc.get_active_metrics(from)
     end
 
     #
@@ -556,6 +564,10 @@ module Dogapi
       @monitor_svc.unmute_monitor(monitor_id, options)
     end
 
+    def resolve_monitors(monitor_groups = [], options = {}, version = nil)
+      @monitor_svc.resolve_monitors(monitor_groups, options, version)
+    end
+
     def search_monitors(options = {})
       @monitor_svc.search_monitors(options)
     end
@@ -668,6 +680,41 @@ module Dogapi
 
     def delete_integration(source_type_name)
       @integration_svc.delete_integration(source_type_name)
+    end
+
+    #
+    # USAGE
+    #
+
+    # Get hourly usage information for different datadog service
+    # Usage data is delayed by up to 72 hours from when it was incurred. It is retained for the past 15 months.#
+    # format of dates is ISO-8601 UTC YYYY-MM-DDThh
+    # ex:
+    #   require 'time'
+    #   Time.now.utc.strftime('%Y-%m-%dT%H')
+    # => "2019-05-05T13"
+    def get_hosts_usage(start_hr, end_hr = nil)
+      @usage_svc.get_hosts_usage(start_hr, end_hr)
+    end
+
+    def get_logs_usage(start_hr, end_hr = nil)
+      @usage_svc.get_logs_usage(start_hr, end_hr)
+    end
+
+    def get_custom_metrics_usage(start_hr, end_hr = nil)
+      @usage_svc.get_custom_metrics_usage(start_hr, end_hr)
+    end
+
+    def get_traces_usage(start_hr, end_hr = nil)
+      @usage_svc.get_traces_usage(start_hr, end_hr)
+    end
+
+    def get_synthetics_usage(start_hr, end_hr = nil)
+      @usage_svc.get_synthetics_usage(start_hr, end_hr)
+    end
+
+    def get_fargate_usage(start_hr, end_hr = nil)
+      @usage_svc.get_fargate_usage(start_hr, end_hr)
     end
 
     private
